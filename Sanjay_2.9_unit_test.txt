@@ -1,0 +1,60 @@
+import unittest
+
+class TestSequenceFunctions(unittest.TestCase):
+
+    def setUp(self):
+        self.reader = csv.DictReader(open('data_file.csv'), delimiter=',') 
+        self.sample_data = [{'name':'P1', 'hour':2, 'cost':'$100'}, {'name':'P2', 'hour':2, 'cost':'$50'}, {'name':'P3', 'hour':4, 'cost':'$400'}, {'name':'P4', 'hour':1, 'cost':'$4000'}]
+        
+    
+    def testTypeDictionary(self):
+        # test each row of the csv file is a Dictionary
+        for row in self.reader: 
+            self.assertTrue(type(row) is dict)   
+
+    def test_SortValue(self):
+        # make sure the output is sorted as per the cost with highest at first
+        sortedlist = sorted(self.sample_data, key=lambda x: int(x['cost'].replace('$', '')), reverse=True)
+        higest_cost_persenter = sortedlist[0]
+        self.assertTrue(higest_cost_persenter['cost'] == '$4000')
+        
+    
+    def test_GetSessionsInfo(self):     
+        # make sure that we have only three sessions and presenters as per sessions
+        presenters = [{'name':'P1', 'hour':2, 'cost':'$100'}, {'name':'P2', 'hour':2, 'cost':'$50'}, {'name':'P3', 'hour':4, 'cost':'$400'}]
+        hours = 8          
+        sessions = []
+        presenter_list = []
+        final_presenter_list = []
+        session_hours = 0
+        index = 0    
+        last_presenter = presenters.pop()
+    
+        for presenter in presenters:       
+            hour = int(presenter['hour'])
+            presenter_list.append(presenter['name']) 
+            session_hours += hour 
+            if not (session_hours + hour < hours / 2 or session_hours + hour == 1) :                          
+                sessions.insert(index, session_hours)                               #Insert sum of hours as per session
+                final_presenter_list.append(presenter_list)                         #Final list of presenters as per session    
+                session_hours = 0
+                index += 1            
+                presenter_list = []        
+                 
+        if index == 1:                                                              # handle case when on one session is formed 
+            sessions.insert(index, session_hours)  
+            final_presenter_list.append(presenter_list)
+            session_hours = 0                    
+            presenter_list = []        
+        
+        # add the last element hours and presenter in third session 
+        sessions.insert(2, session_hours + int(last_presenter['hour']))
+        presenter_list.append(last_presenter['name'])
+        final_presenter_list.append(presenter_list)        
+        self.assertTrue(sessions == [2, 2, 4])  
+        self.assertTrue(final_presenter_list == [['P1'], ['P2'], ['P3']])    
+        
+
+if __name__ == '__main__':
+    unittest.main()
+ 
